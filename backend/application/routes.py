@@ -1,32 +1,16 @@
 from application import app, db
 from application.models import Tasks
-from application.forms import TaskForm
-from flask import render_template, request, redirect, url_for
-from os import getenv
+from flask import render_template, request, redirect, url_for, Response, jsonify
 
-if getenv("CREATE_SCHEMA") == "true":
-    db.drop_all()
-    db.create_all()
-
-@app.route('/')
-@app.route('/home')
-def home():
-    all_tasks = Tasks.query.all()
-    return render_template('index.html', title="Home", all_tasks=all_tasks)
-
-@app.route('/create/task', methods=['GET','POST'])
+@app.route('/create/task', methods=['POST'])
 def create_task():
-    form = TaskForm()
+    package = request.json
+    new_task = Tasks(description=package["description"])
+    db.session.add(new_task)
+    db.session.commit()
+    return Response(f"Added task with description: {new_task.description}", mimetype='text/plain')
 
-    if request.method == "POST":
-        new_task = Tasks(description=form.description.data)
-        db.session.add(new_task)
-        db.session.commit()
-        return redirect(url_for('home'))
-
-    return render_template("create_task.html", title="Add a new Task", form=form)
-
-@app.route('/read/allTasks')
+@app.route('/read/allTasks', methods=['GET'])
 def read_tasks():
     all_tasks = Tasks.query.all()
     tasks_dict = {"tasks": []}
@@ -37,37 +21,34 @@ def read_tasks():
                 "completed": task.completed
             }
         )
-    return tasks_dict
+    return jsonify(tasks_dict)
 
-@app.route('/update/task/<int:id>', methods=['GET','POST'])
+@app.route('/update/task/<int:id>', methods=['PUT'])
 def update_task(id):
-    form = TaskForm()
+    package = request.json
     task = Tasks.query.get(id)
 
-    if request.method == "POST":
-        task.description = form.description.data
-        db.session.commit()
-        return redirect(url_for('home'))
+    task.description = package["description"]
+    db.session.commit()
+    return Response(f"Updated task (ID: {id}) with description: {task.description}", mimetype='text/plain')
 
-    return render_template('update_task.html', task=task, form=form)
-
-@app.route('/delete/task/<int:id>')
+@app.route('/delete/task/<int:id>', methods=["DELETE"])
 def delete_task(id):
     task = Tasks.query.get(id)
     db.session.delete(task)
     db.session.commit()
-    return redirect(url_for('home'))
+    return Response(f"dELETED task WITH ID: {id}", mimetype='text/plain')
 
-@app.route('/complete/task/<int:id>')
+@app.route('/complete/task/<int:id>', methods=["PUT"])
 def complete_task(id):
     task = Tasks.query.get(id)
     task.completed = True
     db.session.commit()
-    return redirect(url_for('home'))
+    return Response(f"Task with ID: {id}) set to completed = TRUE", mimetype='text/plain')
 
 @app.route('/incomplete/task/<int:id>')
 def incomplete_task(id):
     task = Tasks.query.get(id)
     task.completed = False
     db.session.commit()
-    return redirect(url_for('home'))
+    return Response(f"Task with ID: {id}) set to completed = FALSE", mimetype='text/plain')
