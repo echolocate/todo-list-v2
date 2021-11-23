@@ -17,6 +17,7 @@ def read_tasks():
     for task in all_tasks:
         tasks_dict["tasks"].append(
             {
+                "id": task.id,
                 "description": task.description,
                 "completed": task.completed
             }
@@ -46,7 +47,7 @@ def complete_task(id):
     db.session.commit()
     return Response(f"Task with ID: {id}) set to completed = TRUE", mimetype='text/plain')
 
-@app.route('/incomplete/task/<int:id>')
+@app.route('/incomplete/task/<int:id>', methods=["PUT"])
 def incomplete_task(id):
     task = Tasks.query.get(id)
     task.completed = False
