@@ -2,6 +2,7 @@ from application import app
 from application.forms import TaskForm
 from flask import render_template, request, redirect, url_for, jsonify
 import requests
+
 @app.route('/')
 @app.route('/home')
 def home():
