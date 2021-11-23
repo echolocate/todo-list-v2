@@ -37,7 +37,7 @@ def delete_task(id):
     task = Tasks.query.get(id)
     db.session.delete(task)
     db.session.commit()
-    return Response(f"dELETED task WITH ID: {id}", mimetype='text/plain')
+    return Response(f"DELETED task WITH ID: {id}", mimetype='text/plain')
 
 @app.route('/complete/task/<int:id>', methods=["PUT"])
 def complete_task(id):
