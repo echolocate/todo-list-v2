@@ -24,32 +24,41 @@ def read_tasks():
         )
     return jsonify(tasks_dict)
 
+@app.route('/read/task/<int:id>', methods=['GET'])
+def read_task(id):
+    task = Tasks.query.get(id)
+    tasks_dict = {
+                    "id": task.id,
+                    "description": task.description,
+                    "completed": task.completed
+                }
+    return jsonify(tasks_dict)
+
 @app.route('/update/task/<int:id>', methods=['PUT'])
 def update_task(id):
     package = request.json
     task = Tasks.query.get(id)
-
     task.description = package["description"]
     db.session.commit()
     return Response(f"Updated task (ID: {id}) with description: {task.description}", mimetype='text/plain')
 
-@app.route('/delete/task/<int:id>', methods=["DELETE"])
+@app.route('/delete/task/<int:id>', methods=['DELETE'])
 def delete_task(id):
     task = Tasks.query.get(id)
     db.session.delete(task)
     db.session.commit()
-    return Response(f"DELETED task WITH ID: {id}", mimetype='text/plain')
+    return Response(f"Deleted task with ID: {id}", mimetype='text/plain')
 
-@app.route('/complete/task/<int:id>', methods=["PUT"])
+@app.route('/complete/task/<int:id>', methods=['PUT'])
 def complete_task(id):
     task = Tasks.query.get(id)
     task.completed = True
     db.session.commit()
-    return Response(f"Task with ID: {id}) set to completed = TRUE", mimetype='text/plain')
+    return Response(f"Task with ID: {id} set to completed = True", mimetype='text/plain')
 
-@app.route('/incomplete/task/<int:id>', methods=["PUT"])
+@app.route('/incomplete/task/<int:id>', methods=['PUT'])
 def incomplete_task(id):
     task = Tasks.query.get(id)
     task.completed = False
     db.session.commit()
-    return Response(f"Task with ID: {id}) set to completed = FALSE", mimetype='text/plain')
+    return Response(f"Task with ID: {id} set to completed = False", mimetype='text/plain')
